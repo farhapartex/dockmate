@@ -1,0 +1,8 @@
+# Ignore Go build artifacts
+/go.sum
+/bin/
+/pkg/
+/vendor/
+*.exe
+*.out
+*.test
