@@ -4,13 +4,54 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 )
 
-var allowedFrameworks = map[string]bool{
-	"Django":  true,
-	"FastAPI": true,
-	"Nodejs":  true,
-	"Gin":     true,
+func toLower(val *string) *string {
+	lower_val := strings.ToLower(*val)
+	return &lower_val
+}
+
+func main() {
+	framework := flag.String("framework", "", "Specificy framework: django, fastapi, flask")
+	db := flag.String("db", "", "Specifiy Database: postgres, mysql")
+	redis := flag.String("redis", "", "Specifiy Redis: redis")
+	celery := flag.String("celery", "", "Specifiy Celery: celery")
+	port := flag.Int("port", 8000, "Server exposed port")
+
+	flag.Parse()
+
+	if *framework == "" {
+		fmt.Println("Error: Framework is required. Usage: go run main.go --framework=<django|fastapi|flask>")
+	}
+
+	framework = toLower(framework)
+	generateProject(framework, db, redis, celery, port)
+}
+
+func generateProject(framework *string, db *string, redis *string, celery *string, port *int) {
+	switch *framework {
+	case "django":
+		generateDjangoProject()
+	case "fastapi":
+		generateFastAPIProject()
+	case "flask":
+		generateFlaskProject()
+	}
+
+	createDockerfile(*port)
+}
+
+func generateDjangoProject() {
+	fmt.Println("Django")
+}
+
+func generateFastAPIProject() {
+	fmt.Println("FastAPI")
+}
+
+func generateFlaskProject() {
+	fmt.Println("Flask")
 }
 
 func createDockerfile(port int) {
@@ -44,23 +85,4 @@ func createDockerfile(port int) {
 		return
 	}
 
-}
-
-func main() {
-	fmt.Println("Hello Dockmate!")
-	framework := flag.String("framework", "", "Framework Name")
-
-	if *framework == "" {
-		fmt.Println("Error: --framework flag is missing")
-		os.Exit(1)
-	}
-
-	if !allowedFrameworks[*framework] {
-		fmt.Printf("Error: %s is not a valid framework", *framework)
-		os.Exit(1)
-	}
-	port := flag.Int("port", 8000, "Server exposed port") // return an pointer
-	flag.Parse()
-
-	createDockerfile(*port)
 }
