@@ -29,20 +29,21 @@ func main() {
 	}
 
 	framework = toLower(framework)
-	generateProject(framework, db, redis, celery, port, venv, pyve)
+	projectDir := "dockmake_django"
+	generateProject(projectDir, framework, db, redis, celery, port, venv, pyve)
 }
 
-func generateProject(framework *string, db *string, redis *string, celery *string, port *int, venv *string, pyve *string) {
+func generateProject(projectDir string, framework *string, db *string, redis *string, celery *string, port *int, venv *string, pyve *string) {
 	switch *framework {
 	case "django":
-		generateDjangoProject(pyve, venv)
+		generateDjangoProject(projectDir, pyve, venv)
 	case "fastapi":
 		generateFastAPIProject()
 	case "flask":
 		generateFlaskProject()
 	}
 
-	createDockerfile(*port)
+	createDockerfile(projectDir, *port)
 }
 
 func deleteFolderIfExists(dirName *string) {
@@ -56,8 +57,8 @@ func deleteFolderIfExists(dirName *string) {
 
 }
 
-func generateDjangoProject(pyve *string, venv *string) {
-	projectDir := "dockmake_django"
+func generateDjangoProject(projectDir string, pyve *string, venv *string) {
+	//projectDir := "dockmake_django"
 	deleteFolderIfExists(&projectDir)
 
 	err := os.Mkdir(projectDir, 0755)
@@ -77,7 +78,7 @@ func generateDjangoProject(pyve *string, venv *string) {
 		return
 	}
 
-	installCmd := exec.Command("bash", "-c", "source venv/bin/activate && pip install django djangorestframework")
+	installCmd := exec.Command("bash", "-c", "source venv/bin/activate && pip install django djangorestframework && pip freeze > requirements.txt")
 	installCmd.Dir = projectDir
 	installCmd.Stdout = os.Stdout
 	installCmd.Stderr = os.Stderr
@@ -107,8 +108,8 @@ func generateFlaskProject() {
 	fmt.Println("Flask")
 }
 
-func createDockerfile(port int) {
-	fileName := "Dockerfile"
+func createDockerfile(projectDir string, port int) {
+	fileName := fmt.Sprintf("%s/Dockerfile", projectDir)
 	file, err := os.Create(fileName)
 	if err != nil {
 		fmt.Println("Error to create Dockerfile")
